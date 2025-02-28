@@ -19,12 +19,14 @@ Supervised fine-tuning script for decoder language models.
 
 import logging
 import random
-import sys
+import sys,os
 
 import datasets
 import torch
 import transformers
 from transformers import AutoModelForCausalLM, set_seed
+from collator import DataCollatorForCompletionOnlyLM_SELF
+import torch.distributed as dist
 
 from alignment import (
     DataArguments,
@@ -49,7 +51,7 @@ logger = logging.getLogger(__name__)
 def main():
     parser = H4ArgumentParser((ModelArguments, DataArguments, SFTConfig))
     model_args, data_args, training_args = parser.parse()
-
+    
     # Set seed for reproducibility
     set_seed(training_args.seed)
 
@@ -61,6 +63,7 @@ def main():
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[logging.StreamHandler(sys.stdout)],
     )
+
     log_level = training_args.get_process_log_level()
     logger.setLevel(log_level)
     datasets.utils.logging.set_verbosity(log_level)
@@ -141,19 +144,20 @@ def main():
         remove_columns=column_names,
         desc="Applying chat template",
     )
-
+    print(raw_datasets)
+    #raise ValueError("主动退出")
     ##########################
     # Decontaminate benchmarks
     ##########################
     num_raw_train_samples = len(raw_datasets["train"])
-    raw_datasets = raw_datasets.filter(decontaminate_humaneval, batched=True, batch_size=10_000, num_proc=1)
+    #raw_datasets = raw_datasets.filter(decontaminate_humaneval, batched=True, batch_size=10_000, num_proc=1)
     num_filtered_train_samples = num_raw_train_samples - len(raw_datasets["train"])
     logger.info(
         f"Decontaminated {num_filtered_train_samples} ({num_filtered_train_samples/num_raw_train_samples * 100:.2f}%) samples from the training set."
     )
 
     train_dataset = raw_datasets["train"]
-    eval_dataset = raw_datasets["test"]
+    # eval_dataset = raw_datasets["test"]
 
     with training_args.main_process_first(desc="Log a few random samples from the processed training set"):
         for index in random.sample(range(len(raw_datasets["train"])), 3):
@@ -162,20 +166,21 @@ def main():
     ########################
     # Initialize the Trainer
     ########################
+    collator = DataCollatorForCompletionOnlyLM_SELF(tokenizer)
     trainer = SFTTrainer(
         model=model,
         model_init_kwargs=model_kwargs,
         args=training_args,
         train_dataset=train_dataset,
-        eval_dataset=eval_dataset,
+        # eval_dataset=eval_dataset,
         dataset_text_field="text",
         max_seq_length=training_args.max_seq_length,
         tokenizer=tokenizer,
-        packing=True,
+        packing=False,
         peft_config=get_peft_config(model_args),
         dataset_kwargs=training_args.dataset_kwargs,
+        data_collator = collator
     )
-
     ###############
     # Training loop
     ###############
@@ -214,17 +219,17 @@ def main():
 
     ##########
     # Evaluate
-    ##########
-    if training_args.do_eval:
-        logger.info("*** Evaluate ***")
-        metrics = trainer.evaluate()
-        metrics["eval_samples"] = len(eval_dataset)
-        trainer.log_metrics("eval", metrics)
-        trainer.save_metrics("eval", metrics)
+    # ##########
+    # if training_args.do_eval:
+    #     logger.info("*** Evaluate ***")
+    #     metrics = trainer.evaluate()
+    #     metrics["eval_samples"] = len(eval_dataset)
+    #     trainer.log_metrics("eval", metrics)
+    #     trainer.save_metrics("eval", metrics)
 
-    if training_args.push_to_hub is True:
-        logger.info("Pushing to hub...")
-        trainer.push_to_hub(**kwargs)
+    # if training_args.push_to_hub is True:
+    #     logger.info("Pushing to hub...")
+    #     trainer.push_to_hub(**kwargs)
 
     logger.info("*** Training complete ***")
 
