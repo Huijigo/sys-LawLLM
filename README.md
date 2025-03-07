@@ -2,12 +2,15 @@
 
 对于生成模型训练，我们采用的是alignment-handbook框架对模型进行QLora微调，您需要跳转到GenerationModel/alignment-handbook文件目录下运行下列命令
 
+```bash
 ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/multi_gpu.yaml --num_processes=1 scripts/run_sft.py recipes/llama3-8b/sft/config_qlora.yaml --load_in_4bit=true
+```
 
 同时您需要在recipes/llama3-8b/sft/config_qlora.yaml设置数据来源和模型保存路径
 
 对于检索模型训练跳转到/RetrievalModel 目录下 使用如下命令进行训练
 
+```bash
 torchrun --nproc_per_node 1 \
 	-m FlagEmbedding.finetune.embedder.encoder_only.base \
 	--model_name_or_path BAAI/bge-large-zh-v1.5 \
@@ -34,4 +37,5 @@ torchrun --nproc_per_node 1 \
     --temperature 0.02 \
     --sentence_pooling_method cls \
     --normalize_embeddings True \
-    --kd_loss_type kl_div \
+    --kd_loss_type kl_div 
+```
