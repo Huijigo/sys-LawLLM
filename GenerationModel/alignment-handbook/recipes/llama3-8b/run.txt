@@ -5,3 +5,11 @@ CUDA_VISIBLE_DEVICES=0 ACCELERATE_LOG_LEVEL=info accelerate launch --config_file
 
 
 CUDA_VISIBLE_DEVICES=0,1 ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/multi_gpu.yaml --num_processes=2 scripts/run_sft.py /home/lsh/code/alignment-handbook/recipes/llama3-8b/sft/config_qlora.yaml --load_in_4bit=true
+
+CUDA_VISIBLE_DEVICES=0,1,2,3 ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/multi_gpu.yaml --num_processes=4 scripts/run_sft.py /home/lsh/code/alignment-handbook/recipes/llama3-8b/sft/config_qlora.yaml --load_in_4bit=true
+
+CUDA_VISIBLE_DEVICES=0 ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/multi_gpu.yaml --num_processes=1 scripts/run_sft.py /home/lsh/code/alignment-handbook/recipes/llama3-8b/sft/config_qlora.yaml --load_in_4bit=true
+
+
+
+CUDA_VISIBLE_DEVICES=0,1 ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/multi_gpu.yaml --num_processes=2 scripts/run_sft.py /home/lsh/code/alignment-handbook/recipes/llama3-8b/sft/config_qlora.yaml --load_in_4bit=true

@@ -214,7 +214,7 @@ class DataCollatorForCompletionOnlyLM_SELF(DataCollatorForLanguageModeling):
             for eot_index in range(ignore_index + 1, len(eot_site_index),2):
                 batch['labels'][i][eot_site_index[eot_index]] = self.tokenizer.eos_token_id
 
-        self_sl_max_length = 7168
+        self_sl_max_length = 8192
         batch['input_ids'] = batch['input_ids'][:,:self_sl_max_length]
         batch['attention_mask'] = batch['attention_mask'][:,:self_sl_max_length]
         batch['labels'] = batch['labels'][:,:self_sl_max_length]
