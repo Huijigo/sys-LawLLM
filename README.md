@@ -11,8 +11,8 @@ For the training of the retrieval model, navigate to the */RetrievalModel* direc
 
 ```bash
 torchrun --nproc_per_node 1 \
-	-m FlagEmbedding.finetune.embedder.encoder_only.base \
-	--model_name_or_path BAAI/bge-large-zh-v1.5 \
+    -m FlagEmbedding.finetune.embedder.encoder_only.base \
+    --model_name_or_path BAAI/bge-large-zh-v1.5 \
     --cache_dir ./cache/model \
     --train_data  ./sys-LawLLM/RetrievalModel/P2_RAGModel/version_data_5 \
     --cache_path ./cache/data \
@@ -21,7 +21,7 @@ torchrun --nproc_per_node 1 \
     --passage_max_len 512 \
     --pad_to_multiple_of 8 \
     --knowledge_distillation True \
-	--output_dir ./model \
+    --output_dir ./model \
     --overwrite_output_dir \
     --learning_rate 1e-5 \
     --num_train_epochs 2 \
