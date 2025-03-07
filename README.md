@@ -1,14 +1,13 @@
 # sys-LawLLM
 
-对于生成模型训练，我们采用的是alignment-handbook框架对模型进行QLora微调，您需要跳转到GenerationModel/alignment-handbook文件目录下运行下列命令
-
+For the training of the generative model, we use the alignment-handbook framework to perform QLora fine-tuning on the model. You need to navigate to the *GenerationModel/alignment-handbook* file directory and run the following commands. 
 ```bash
 ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/multi_gpu.yaml --num_processes=1 scripts/run_sft.py recipes/llama3-8b/sft/config_qlora.yaml --load_in_4bit=true
 ```
 
-同时您需要在recipes/llama3-8b/sft/config_qlora.yaml设置数据来源和模型保存路径
+At the same time, you need to set the data source and the model saving path in *recipes/llama3-8b/sft/config_qlora.yaml*.
 
-对于检索模型训练跳转到/RetrievalModel 目录下 使用如下命令进行训练
+For the training of the retrieval model, navigate to the */RetrievalModel* directory and use the following commands for training.
 
 ```bash
 torchrun --nproc_per_node 1 \
